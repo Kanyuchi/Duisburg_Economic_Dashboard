@@ -80,5 +80,17 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- Data sources: City of Duisburg Statistics Office, Federal Statistical Office of Germany
 - Inspiration from various economic dashboards and data visualization projects
+
+## Data Sources
+
+The dashboard utilizes data from multiple reliable sources:
+
+- **City of Duisburg Statistics Office**: Primary source for local economic indicators, employment statistics, and real estate market data
+- **Federal Statistical Office of Germany (Destatis)**: National economic trends, comparative city data, and standardized indicators
+- **European Commission Digital Economy and Society Index (DESI)**: ICT adoption metrics and digital transformation indicators
+- **Bundesbank**: Interest rate historical data and forecasts
+- **Bundesinstitut für Bau-, Stadt- und Raumforschung (BBSR)**: Housing and urban development statistics
+- **Regional Chamber of Commerce (IHK Duisburg)**: Local business sentiment and economic outlook surveys
+
+Data is updated quarterly where available. Historical datasets span from 2000 to present, while predictions extend to 2035.
