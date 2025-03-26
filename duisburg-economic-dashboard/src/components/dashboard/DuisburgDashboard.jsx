@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Slider } from '../../components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { Switch } from '../../components/ui/switch';
+import { Label } from '../../components/ui/label';
+import { Button } from '../../components/ui/button';
 import { BarChart, LineChart, Line, Area, AreaChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Treemap, ReferenceLine } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Briefcase, Users, TrendingUp, Building, Home, AlertCircle, HelpCircle, TrendingDown, BarChart3, Compass } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Briefcase, Users, TrendingUp, Building, Home, AlertCircle, HelpCircle, TrendingDown, BarChart3, Compass, RefreshCw } from 'lucide-react';
+import { useDashboard } from '../../contexts/DashboardContext';
+import GdpDataComponent from './GdpDataComponent';
+import BusinessRegistrationsComponent from './BusinessRegistrationsComponent';
 
 const DuisburgDashboard = () => {
-  // State for scenario modeling
-  const [interestRateChange, setInterestRateChange] = useState(0);
-  const [populationGrowthRate, setPopulationGrowthRate] = useState(0.5);
-  const [digitalInvestment, setDigitalInvestment] = useState(0);
-  const [selectedCity, setSelectedCity] = useState('duisburg');
-  const [showPredictions, setShowPredictions] = useState(true);
-  const [predictionYears, setPredictionYears] = useState(3);
+  // Get data and actions from the dashboard context
+  const { 
+    interestRateChange, setInterestRateChange,
+    populationGrowthRate, setPopulationGrowthRate,
+    digitalInvestment, setDigitalInvestment,
+    selectedCity, setSelectedCity,
+    showPredictions, setShowPredictions,
+    predictionYears, setPredictionYears,
+    isLoading, error,
+    refreshData
+  } = useDashboard();
 
   // City comparison data
   const comparableCities = [
@@ -239,6 +246,20 @@ const DuisburgDashboard = () => {
       <h1 className="text-3xl font-bold mb-2 text-center">Duisburg Economic Dashboard</h1>
       <p className="text-center text-gray-600 mb-2">Interactive analysis with predictive modeling and city benchmarking</p>
       
+      {/* Data refresh button */}
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={refreshData}
+          disabled={isLoading}
+          className="flex items-center"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          {isLoading ? "Refreshing..." : "Refresh Data"}
+        </Button>
+      </div>
+      
       {/* Dashboard Controls */}
       <Card className="mb-6 bg-white">
         <CardHeader className="pb-2">
@@ -356,10 +377,11 @@ const DuisburgDashboard = () => {
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="economy">Economy</TabsTrigger>
+          <TabsTrigger value="business">Business</TabsTrigger>
+          <TabsTrigger value="workforce">Workforce</TabsTrigger>
           <TabsTrigger value="realestate">Real Estate</TabsTrigger>
-          <TabsTrigger value="ict">ICT Adoption</TabsTrigger>
           <TabsTrigger value="comparison">City Comparison</TabsTrigger>
-          <TabsTrigger value="predictions">Forecast Summary</TabsTrigger>
         </TabsList>
         
         {/* Overview Tab */}
@@ -527,6 +549,19 @@ const DuisburgDashboard = () => {
           </Card>
         </TabsContent>
 
+        {/* Economy Tab - Updated with API components */}
+        <TabsContent value="economy" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* GDP Component from API */}
+            <GdpDataComponent />
+            
+            {/* Business Registrations Component from API */}
+            <BusinessRegistrationsComponent />
+            
+            {/* ...other existing economy components... */}
+          </div>
+        </TabsContent>
+
         {/* Real Estate Tab with Predictive Features */}
         <TabsContent value="realestate" className="space-y-4">
           <Card className="bg-blue-50 border-blue-200">
@@ -683,156 +718,6 @@ const DuisburgDashboard = () => {
                        "Low risk: Price growth appears aligned with economic fundamentals"}
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ICT Adoption Tab with Predictive Features */}
-        <TabsContent value="ict" className="space-y-4">
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="pt-6">
-              <div className="flex items-start space-x-4">
-                <AlertCircle className="h-6 w-6 text-blue-500 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-medium text-blue-800 mb-2">ICT Adoption Forecast</h3>
-                  <p className="text-sm text-blue-700">
-                    This section models how different levels of digital investment could affect technology adoption rates in Duisburg. Adjust the digital investment slider to see potential impacts.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Technology Adoption Forecast</CardTitle>
-                <CardDescription>
-                  Shows how digital investment ({digitalInvestment > 0 ? `+${digitalInvestment}` : digitalInvestment}) could affect adoption of key technologies over {predictionYears} years.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={ictAdoptionTrendData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis tickFormatter={(value) => `${value}%`} />
-                      <Tooltip formatter={(value) => `${value}%`} />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="ai" 
-                        stroke="#8884d8" 
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }} 
-                        name="AI Technology" 
-                        strokeDasharray={(datum) => datum.forecast ? "5 5" : "0"}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="cloud" 
-                        stroke="#82ca9d" 
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }} 
-                        name="Cloud Computing" 
-                        strokeDasharray={(datum) => datum.forecast ? "5 5" : "0"}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="ecommerce" 
-                        stroke="#ffc658" 
-                        strokeWidth={2}
-                        activeDot={{ r: 8 }} 
-                        name="E-commerce" 
-                        strokeDasharray={(datum) => datum.forecast ? "5 5" : "0"}
-                      />
-                      {showPredictions && <ReferenceLine x="2024" stroke="#ff7300" label="Forecast Start" />}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Technology Adoption Scenarios</CardTitle>
-                <CardDescription>Compares potential outcomes based on different investment levels.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-medium text-blue-700">AI Technology Adoption Year {2024 + predictionYears}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-blue-700">{Math.round(19.6 + predictionYears * 3 + digitalInvestment * predictionYears * 0.5)}%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${Math.min(100, (19.6 + predictionYears * 3 + digitalInvestment * predictionYears * 0.5) * 2)}%` }}></div>
-                      </div>
-                      <div className="ml-3 text-xs w-12">
-                        <div className="text-blue-600">Current: 19.6%</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-medium text-green-700">E-commerce Adoption Year {2024 + predictionYears}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-green-700">{Math.round(12.5 + predictionYears * 0.3 + digitalInvestment * predictionYears * 0.4)}%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${Math.min(100, (12.5 + predictionYears * 0.3 + digitalInvestment * predictionYears * 0.4) * 2)}%` }}></div>
-                      </div>
-                      <div className="ml-3 text-xs w-12">
-                        <div className="text-green-600">Current: 12.5%</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="relative pt-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs font-medium text-purple-700">Cloud Computing Adoption Year {2024 + predictionYears}</span>
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-purple-700">{Math.round(38.0 + predictionYears * 2 + digitalInvestment * predictionYears * 0.3)}%</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className="bg-purple-600 h-2.5 rounded-full" style={{ width: `${Math.min(100, (38.0 + predictionYears * 2 + digitalInvestment * predictionYears * 0.3))}%` }}></div>
-                      </div>
-                      <div className="ml-3 text-xs w-12">
-                        <div className="text-purple-600">Current: 38.0%</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <h4 className="font-medium text-gray-800 mt-6">Impact Analysis</h4>
-                  <p className="text-sm text-gray-700">
-                    {digitalInvestment === 0 ? 
-                      "Without additional investment, AI adoption would reach ~" + Math.round(19.6 + predictionYears * 3) + "% by " + (2024 + predictionYears) + ", leaving Duisburg behind digital leaders." :
-                      "With the current investment settings, Duisburg could reach " + Math.round(19.6 + predictionYears * 3 + digitalInvestment * predictionYears * 0.5) + "% AI adoption by " + (2024 + predictionYears) + ", " + 
-                      (digitalInvestment > 5 ? "potentially becoming a regional leader in digital transformation." : 
-                       digitalInvestment > 2 ? "showing significant improvement in digital competitiveness." :
-                       "making modest progress in digital transformation.")
-                    }
-                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -1030,255 +915,6 @@ const DuisburgDashboard = () => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* Prediction Summary Tab */}
-        <TabsContent value="predictions" className="space-y-4">
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="pt-6">
-              <div className="flex items-start space-x-4">
-                <BarChart3 className="h-6 w-6 text-blue-500 mt-1 flex-shrink-0" />
-                <div>
-                  <h3 className="font-medium text-blue-800 mb-2">Forecast Summary Dashboard</h3>
-                  <p className="text-sm text-blue-700">
-                    This consolidated view summarizes key forecasts based on your parameter settings. Use this dashboard to quickly understand potential outcomes across different domains.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <Users className="h-4 w-4 mr-2" />
-                  Population
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {new Intl.NumberFormat().format(Math.round(populationForecast[predictionYears-1].population))}
-                </div>
-                <div className="text-sm text-gray-500 mb-4">Forecast for {2024 + predictionYears}</div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Current (2023)</span>
-                    <span className="font-medium">{new Intl.NumberFormat().format(503707)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Change</span>
-                    <span className={`font-medium ${populationForecast[predictionYears-1].population > 503707 ? 'text-green-600' : 'text-red-600'}`}>
-                      {populationForecast[predictionYears-1].population > 503707 ? '+' : ''}
-                      {new Intl.NumberFormat().format(Math.round(populationForecast[predictionYears-1].population - 503707))} 
-                      ({((populationForecast[predictionYears-1].population / 503707 - 1) * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Annual Growth Rate</span>
-                    <span className="font-medium">{populationGrowthRate}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <Home className="h-4 w-4 mr-2" />
-                  Housing
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {rentForecast[predictionYears*4-1].apartmentRent} €/m²
-                </div>
-                <div className="text-sm text-gray-500 mb-4">Avg. Rent Forecast for {2024 + predictionYears}</div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Current (2024)</span>
-                    <span className="font-medium">9.5 €/m²</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Change</span>
-                    <span className={`font-medium ${rentForecast[predictionYears*4-1].apartmentRent > 9.5 ? 'text-red-600' : 'text-green-600'}`}>
-                      {rentForecast[predictionYears*4-1].apartmentRent > 9.5 ? '+' : ''}
-                      {(rentForecast[predictionYears*4-1].apartmentRent - 9.5).toFixed(1)} €/m² 
-                      ({((rentForecast[predictionYears*4-1].apartmentRent / 9.5 - 1) * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>House Price (forecast)</span>
-                    <span className="font-medium">{rentForecast[predictionYears*4-1].housePrice} €/m²</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Technology
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">
-                  {ictForecast[predictionYears-1].ai}%
-                </div>
-                <div className="text-sm text-gray-500 mb-4">AI Adoption Forecast for {2024 + predictionYears}</div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Current (2024)</span>
-                    <span className="font-medium">19.6%</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Change</span>
-                    <span className={`font-medium text-green-600`}>
-                      +{(ictForecast[predictionYears-1].ai - 19.6).toFixed(1)}% 
-                      ({((ictForecast[predictionYears-1].ai / 19.6 - 1) * 100).toFixed(1)}%)
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>E-commerce (forecast)</span>
-                    <span className="font-medium">{ictForecast[predictionYears-1].ecommerce}%</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Combined Impact Analysis</CardTitle>
-              <CardDescription>Analyzing the interaction between different forecast domains</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Economic Growth Potential</h4>
-                    <div className="flex items-center mb-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className={`bg-blue-600 h-2.5 rounded-full`} style={{ width: `${30 + 
-                          (populationGrowthRate > 0 ? populationGrowthRate * 10 : 0) + 
-                          (interestRateChange > 2 ? 0 : interestRateChange < 0 ? 10 : 5) + 
-                          (digitalInvestment * 3)}%` }}></div>
-                      </div>
-                      <span className="ml-2 text-sm">
-                        {
-                          (populationGrowthRate > 0.5 && digitalInvestment > 3 && interestRateChange < 2) ? "Strong" :
-                          (populationGrowthRate > 0 && digitalInvestment > 0) ? "Moderate" : "Limited"
-                        }
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">Based on population trend, technology adoption, and economic conditions</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Housing Market Outlook</h4>
-                    <div className="flex items-center mb-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className={`${
-                          (populationGrowthRate > 1 && interestRateChange < 1) ? "bg-red-600" :
-                          (populationGrowthRate > 0.3 && interestRateChange < 3) ? "bg-yellow-600" : "bg-green-600"
-                        } h-2.5 rounded-full`} style={{ width: `${40 + 
-                          (populationGrowthRate * 15) + 
-                          (interestRateChange > 2 ? -10 : interestRateChange < 0 ? 15 : 0)}%` }}></div>
-                      </div>
-                      <span className="ml-2 text-sm">
-                        {
-                          (populationGrowthRate > 1 && interestRateChange < 1) ? "Overheating" :
-                          (populationGrowthRate > 0.3 && interestRateChange < 3) ? "Growth" : "Stable"
-                        }
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">Housing market trajectory based on population and interest rate scenarios</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Competitiveness Position</h4>
-                    <div className="flex items-center mb-2">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div className={`bg-purple-600 h-2.5 rounded-full`} style={{ width: `${35 + 
-                          (digitalInvestment * 5) + 
-                          (populationGrowthRate > 0 ? 5 : -5) + 
-                          (interestRateChange > 3 ? -10 : interestRateChange < 0 ? 5 : 0)}%` }}></div>
-                      </div>
-                      <span className="ml-2 text-sm">
-                        {
-                          (digitalInvestment > 5 && populationGrowthRate > 0) ? "Improving" :
-                          (digitalInvestment > 2) ? "Maintaining" : "Declining"
-                        }
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600">Relative position compared to peer cities based on combined factors</p>
-                  </div>
-                </div>
-                
-                <h4 className="font-medium text-gray-800 mt-2">Key Forecast Insights</h4>
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-2">•</span>
-                    <span>
-                      <strong>Population Trajectory:</strong> {
-                        populationGrowthRate > 1 ? 
-                        "The high growth scenario would put pressure on housing and infrastructure, requiring accelerated development." :
-                        populationGrowthRate > 0 ?
-                        "Moderate growth provides stability while allowing planned infrastructure development to keep pace." :
-                        "Population decline would require focus on retention strategies and service optimization."
-                      }
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-2">•</span>
-                    <span>
-                      <strong>Housing Market:</strong> {
-                        interestRateChange > 3 ?
-                        "Significant interest rate increases could reduce housing demand and slow price growth, potentially benefiting affordability." :
-                        interestRateChange > 0 ?
-                        "Moderate interest rate increases would likely stabilize the housing market after recent growth periods." :
-                        "Lower interest rates could accelerate property price growth, potentially creating affordability challenges."
-                      }
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-2">•</span>
-                    <span>
-                      <strong>Digital Transformation:</strong> {
-                        digitalInvestment > 5 ?
-                        "High investment in digital infrastructure could position Duisburg as a technology leader, attracting innovative businesses and skilled workers." :
-                        digitalInvestment > 2 ?
-                        "Moderate digital investment would help maintain competitiveness without closing the gap with digital leaders." :
-                        "Limited digital investment risks widening the technology gap with neighboring cities, potentially affecting economic development."
-                      }
-                    </span>
-                  </li>
-                </ul>
-                
-                <div className="mt-2 p-4 bg-gray-100 rounded-lg">
-                  <h4 className="font-medium text-gray-800 mb-2">Strategic Recommendation</h4>
-                  <p className="text-sm text-gray-700">
-                    {
-                      (digitalInvestment > 3 && populationGrowthRate > 0.3 && interestRateChange < 3) ?
-                      "The combination of positive population growth, manageable interest rates, and strong digital investment creates favorable conditions for economic development. Focus on leveraging technology to address employment challenges while ensuring housing development keeps pace with population growth." :
-                      
-                      (digitalInvestment > 3 && populationGrowthRate < 0.3) ?
-                      "With limited population growth but strong digital investment, focus on quality over quantity - attracting high-skilled workers and innovative businesses through digital leadership, while addressing structural economic challenges." :
-                      
-                      (digitalInvestment < 3 && populationGrowthRate > 0.5) ?
-                      "Population growth without corresponding digital investment risks creating a growth imbalance. Consider reallocating resources to improve digital infrastructure and workforce skills to maximize the benefits of population growth." :
-                      
-                      "Based on current parameter settings, Duisburg faces challenges in maintaining competitive position. Consider a more balanced approach with moderate investments in both physical infrastructure and digital transformation to create sustainable growth conditions."
-                    }
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>

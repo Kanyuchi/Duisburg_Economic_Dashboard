@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiService from '../services/api';
 
 // Create context
 const DashboardContext = createContext();
@@ -26,6 +27,12 @@ export const DashboardProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Data state from API
+  const [gdpData, setGdpData] = useState(null);
+  const [businessRegistrationsData, setBusinessRegistrationsData] = useState(null);
+  const [commutersBySectorData, setCommutersBySectorData] = useState(null);
+  const [businessRegisterEmployeesData, setBusinessRegisterEmployeesData] = useState(null);
 
   // Reset parameters function
   const resetParameters = () => {
@@ -35,15 +42,43 @@ export const DashboardProvider = ({ children }) => {
     setPredictionYears(3);
   };
 
-  // Simulate data loading on initial render
-  useEffect(() => {
+  // Fetch data from API
+  const fetchDashboardData = async () => {
     setIsLoading(true);
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Fetch data in parallel
+      const [
+        gdpResponse,
+        businessRegistrationsResponse,
+        commutersBySectorResponse,
+        businessRegisterEmployeesResponse
+      ] = await Promise.all([
+        apiService.economicData.getGDP(),
+        apiService.businessRegistrations.getAll(),
+        apiService.commuters.getBySector(),
+        apiService.businessRegister.getEmployees()
+      ]);
+      
+      // Update state with fetched data
+      setGdpData(gdpResponse);
+      setBusinessRegistrationsData(businessRegistrationsResponse);
+      setCommutersBySectorData(commutersBySectorResponse);
+      setBusinessRegisterEmployeesData(businessRegisterEmployeesResponse);
+      
       setLastUpdated(new Date());
-    }, 1500);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError('Failed to fetch dashboard data. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
 
   // Calculate dashboard state when parameters change
@@ -78,8 +113,15 @@ export const DashboardProvider = ({ children }) => {
     error,
     lastUpdated,
     
+    // API data
+    gdpData,
+    businessRegistrationsData,
+    commutersBySectorData,
+    businessRegisterEmployeesData,
+    
     // Actions
     resetParameters,
+    refreshData: fetchDashboardData
   };
 
   return (
